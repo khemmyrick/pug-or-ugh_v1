@@ -1,3 +1,6 @@
+'''
+Serializers turn model instances into JSON, and turn JSON back into model instances.
+'''
 from django.contrib.auth import get_user_model
 
 from rest_framework import serializers
@@ -6,6 +9,9 @@ from . import models
 
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
+    # note: write_only means this text won't show up in the JSON output
+    # but it will allow the user to input a password.
+    ## question: should this go in extra_kwargs under class meta?
 
     def create(self, validated_data):
         user = get_user_model().objects.create(
@@ -33,10 +39,15 @@ class DogSerializer(serializers.ModelSerializer):
 
 
 class UserPrefSerializer(serializers.ModelSerializer):
-    fields = (
-        'id',
-        'age',
-        'gender',
-        'size'
-    )
+    class Meta:
+        extra_kwargs = {
+            'user': {'write_only': True}
+        }
+        fields = (
+            'id',
+            'age',
+            'gender',
+            'size'
+        )
+
     model = models.UserPref

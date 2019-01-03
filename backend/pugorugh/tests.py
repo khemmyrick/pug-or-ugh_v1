@@ -62,7 +62,7 @@ class Pregame(object):
         )
         self.dog5_boom.save()
 
-        # Sample Users.
+        ## Sample Users.
         self.user1_wahh = User.objects.create_user(
             'Joaquin Dean',
             'wahh@doublerdogs.com',
