@@ -15,9 +15,8 @@ def load_data():
         data = json.load(file)
 
         serializer = DogSerializer(data=data, many=True)
-        print(isinstance(serializer, tuple)) # Where is it getting a tuple?
         if serializer.is_valid():
-                serializer.save()
+            serializer.save()
         else:
             print(serializer.errors)
 

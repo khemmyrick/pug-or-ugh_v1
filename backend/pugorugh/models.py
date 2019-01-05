@@ -15,7 +15,7 @@ class Dog(models.Model):
     '''
     name = models.CharField(max_length=255)
     image_filename = models.CharField(default='', max_length=500)
-    breed = models.CharField(max_length=255) ## Could be another model?
+    breed = models.CharField(max_length=255)
     age = models.IntegerField(default=1)
     gender = models.CharField(default='f', max_length=3)
     size = models.CharField(default='s', max_length=3)

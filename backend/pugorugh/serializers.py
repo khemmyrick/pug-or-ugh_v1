@@ -26,16 +26,17 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class DogSerializer(serializers.ModelSerializer):
-    fields = (
-        'id',
-        'name',
-        'image_filename',
-        'breed',
-        'age',
-        'gender',
-        'size'
-    )
-    model = models.Dog
+    class Meta:
+        fields = (
+            'id',
+            'name',
+            'image_filename',
+            'breed',
+            'age',
+            'gender',
+            'size'
+        )
+        model = models.Dog
 
 
 class UserPrefSerializer(serializers.ModelSerializer):
@@ -49,5 +50,4 @@ class UserPrefSerializer(serializers.ModelSerializer):
             'gender',
             'size'
         )
-
-    model = models.UserPref
+        model = models.UserPref
