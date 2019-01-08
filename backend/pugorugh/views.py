@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.shortcuts import get_object_or_404
 
 from rest_framework import permissions
 from rest_framework import viewsets
@@ -18,8 +19,18 @@ class UserPrefDetailView(RetrieveUpdateAPIView):
     '''
     Review or update user preferences.
     '''
+    # lookup_field = 'pk'
     model = models.UserPref
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    queryset = models.UserPref.objects.all()
+
+    def get_object(self):
+        return get_object_or_404(
+            self.queryset,
+            user_id=self.kwargs.get('user_pk'),
+            pk=self.kwargs.get('pk')
+        )
+
 
 
 class UserDogDetailView(RetrieveUpdateAPIView):

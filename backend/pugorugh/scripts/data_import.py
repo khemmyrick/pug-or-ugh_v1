@@ -17,10 +17,11 @@ def load_data():
         serializer = DogSerializer(data=data, many=True)
         if serializer.is_valid():
             serializer.save()
+            print('load_data done.')
         else:
-            print(serializer.errors)
+            print('These are the errors: {}'.format(serializer.errors))
 
-    print('load_data done.')
+
 
 
 if __name__ == '__main__':

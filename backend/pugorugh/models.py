@@ -15,7 +15,7 @@ class Dog(models.Model):
     '''
     name = models.CharField(max_length=255)
     image_filename = models.CharField(default='', max_length=500)
-    breed = models.CharField(max_length=255)
+    breed = models.CharField(default='Unknown Mix', max_length=255)
     age = models.IntegerField(default=1)
     gender = models.CharField(default='f', max_length=3)
     size = models.CharField(default='s', max_length=3)
@@ -27,14 +27,19 @@ class Dog(models.Model):
 class UserPref(models.Model):
     '''
     A model representing user preferences.
+
+    attrs:
+        user: The user these preferences belong to.
+        age: a str representing desired age range.
+        gender: a str representing desired gender.
+        size: a str representing desired size.
     '''
     user = models.OneToOneField('auth.User', on_delete=models.CASCADE)
     # ForeignKey didnt ring any error bells...
     # models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    age = models.IntegerField(default=1)
-    gender = models.CharField(default='f', max_length=3)
-    ## Front end will deal with converting single-letters to full words.
-    size = models.CharField(default='s', max_length=3)
+    age = models.CharField(max_length=3)
+    gender = models.CharField(max_length=3)
+    size = models.CharField(max_length=3)
 
     def __str__(self):
         return '{} prefers a {}-month old, {} {} dog.'.format(
@@ -56,7 +61,7 @@ class UserDog(models.Model):
         'dog',
         on_delete=models.CASCADE,
     )
-    status = models.CharField(default='', max_length=3)
+    status = models.CharField(max_length=3)
 
     class Meta:
         unique_together = ['user', 'dog']
