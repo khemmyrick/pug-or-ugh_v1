@@ -5,7 +5,7 @@ from django.views.generic.base import RedirectView
 from rest_framework.urlpatterns import format_suffix_patterns
 from rest_framework.authtoken.views import obtain_auth_token
 
-from pugorugh.views import UserPrefDetailView, UserRegisterView
+from pugorugh.views import UserRegisterView, UserPrefDetailView
 
 # API endpoints
 urlpatterns = format_suffix_patterns([
