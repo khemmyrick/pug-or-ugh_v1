@@ -57,7 +57,7 @@ class UserDog(models.Model):
         'auth.User',
         on_delete=models.CASCADE,
     )
-    dog = models.ForeignKey(
+    dog = models.OneToOneField(
         'dog',
         on_delete=models.CASCADE,
     )
