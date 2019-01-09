@@ -15,6 +15,18 @@ class UserRegisterView(CreateAPIView):
     model = get_user_model()
     serializer_class = serializers.UserSerializer
 
+    '''
+    def post(self, request, *args, **kwargs):
+        return self.create(request, *args, **kwargs)
+    userpref = models.UserPref(
+        user=model,
+        age='b',
+        gender='f',
+        size='s'
+    )
+    userpref.create()
+    '''
+    
 
 class UserPrefDetailView(RetrieveUpdateAPIView):
     '''
@@ -42,10 +54,11 @@ class UserPrefDetailView(RetrieveUpdateAPIView):
 class UserPrefViewSet(mixins.CreateModelMixin,
                    mixins.RetrieveModelMixin,
                    mixins.UpdateModelMixin,
-                   mixins.DestroyModelMixin,
+                   # mixins.DestroyModelMixin,
                    viewsets.GenericViewSet):
     queryset = models.UserPref.objects.all()
     serializer_class = serializers.UserPrefSerializer
+    # Does this need more attrs?  Should I use this at all?
 
 
 class UserDogDetailView(RetrieveUpdateAPIView):

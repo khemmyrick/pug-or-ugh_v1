@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import models
+from django.db.models.signals import post_save
 
 
 class Dog(models.Model):
@@ -37,14 +38,34 @@ class UserPref(models.Model):
     user = models.OneToOneField('auth.User', on_delete=models.CASCADE)
     # ForeignKey didnt ring any error bells...
     # models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    age = models.CharField(max_length=3)
-    gender = models.CharField(max_length=3)
-    size = models.CharField(max_length=3)
+    age = models.CharField(default='b', max_length=3)
+    gender = models.CharField(default='f', max_length=3)
+    size = models.CharField(default='s', max_length=3)
+    age_key = {
+        'b': 'baby',
+        'y': 'young',
+        'a': 'adult',
+        's': 'senior'
+    }
+    gender_key = {
+        'm': 'male',
+        'f': 'female'
+    }
+    size_key = {
+        's': 'small',
+        'm': 'medium',
+        'l': 'large',
+        'xl': 'extra-large'
+    }
 
     def __str__(self):
-        return '{} prefers a {}-month old, {} {} dog.'.format(
-            self.user, str(self.age), self.size, self.gender
+        return '{} prefers a {}, {}, {} dog.'.format(
+            self.user,
+            str(self.age_key[self.age]),
+            self.size_key[self.size],
+            self.gender_key[self.gender]
         )
+
 
 
 class UserDog(models.Model):
@@ -73,3 +94,12 @@ class UserDog(models.Model):
         elif self.status == 'd':
             return 'You disliked {}.'.format(self.dog.name)
         return "You haven't decided on {}.".format(self.dog.name)
+
+
+## function to create userpref when a user is registered.
+def create_userpref(sender, **kwargs):
+    if kwargs['created']:
+        userpref = UserPref.objects.create(user=kwargs['instance'])
+
+
+post_save.connect(create_userpref, sender=User)
