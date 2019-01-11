@@ -38,24 +38,27 @@ class UserPref(models.Model):
     user = models.OneToOneField('auth.User', on_delete=models.CASCADE)
     # ForeignKey didnt ring any error bells...
     # models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    age = models.CharField(default='b', max_length=3)
-    gender = models.CharField(default='f', max_length=3)
-    size = models.CharField(default='s', max_length=3)
+    age = models.CharField(max_length=3)
+    gender = models.CharField(max_length=3)
+    size = models.CharField(max_length=3)
     age_key = {
         'b': 'baby',
         'y': 'young',
         'a': 'adult',
-        's': 'senior'
+        's': 'senior',
+        '': 'any-aged'
     }
     gender_key = {
         'm': 'male',
-        'f': 'female'
+        'f': 'female',
+        '': 'any-gendered'
     }
     size_key = {
         's': 'small',
         'm': 'medium',
         'l': 'large',
-        'xl': 'extra-large'
+        'xl': 'extra-large',
+        '': 'any-sized'
     }
 
     def __str__(self):
@@ -94,12 +97,3 @@ class UserDog(models.Model):
         elif self.status == 'd':
             return 'You disliked {}.'.format(self.dog.name)
         return "You haven't decided on {}.".format(self.dog.name)
-
-
-## function to create userpref when a user is registered.
-def create_userpref(sender, **kwargs):
-    if kwargs['created']:
-        userpref = UserPref.objects.create(user=kwargs['instance'])
-
-
-post_save.connect(create_userpref, sender=User)

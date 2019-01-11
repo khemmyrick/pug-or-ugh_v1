@@ -50,6 +50,11 @@ class UserPrefDetailView(RetrieveUpdateAPIView):
             pk=self.kwargs.get('pk')
         )
 
+    """
+    def put(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs)
+    """
+
 
 class UserPrefViewSet(mixins.CreateModelMixin,
                    mixins.RetrieveModelMixin,
