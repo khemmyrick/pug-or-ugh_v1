@@ -32,23 +32,28 @@ class UserPrefDetailView(RetrieveUpdateAPIView):
     '''
     Review or update user preferences.
     '''
-    # lookup_field = 'pk'
     model = models.UserPref
+    lookup_field = 'pk'
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
     serializer_class = serializers.UserPrefSerializer
-    ## 1st 5 minutes of being awake
-    # Now getting 200, 301 and 304 codes.
-    # UserPrefs still failing to populate.
-    queryset = models.UserPref.objects.all()
+    user = self.request.user
+    queryset = models.UserPref.objects.filter(user=self.user)
+
+    def get_queryset(self):
+        return models.UserPref.objects.filter(user=self.request.user)
 
     def get_object(self):
         print('UserPref queryset: ', self.queryset)
-        ## why is queryset an empty object?
+        ## print line displays ALL UserPref objects.
+        ## No new UserPref objects made since adding signals...
+        ## UserPref update logic must be added to app somewhere.
+        # is this also returning a queryset?
         return get_object_or_404(
             self.queryset,
             user_id=self.kwargs.get('user_pk'),
             pk=self.kwargs.get('pk')
         )
+
 
     """
     def put(self, request, *args, **kwargs):
