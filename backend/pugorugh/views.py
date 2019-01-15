@@ -38,6 +38,7 @@ zx        gender='f',
     )
     userpref.create()
     '''
+
     
 class UserPrefDetailView(mixins.CreateModelMixin,
                          mixins.RetrieveModelMixin,
