@@ -7,7 +7,7 @@ from rest_framework import mixins
 from rest_framework import permissions
 from rest_framework import viewsets
 from rest_framework.generics import (CreateAPIView, RetrieveUpdateAPIView,
-                                     GenericAPIView)
+                                     GenericAPIView, ListCreateAPIView)
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 
@@ -33,23 +33,34 @@ class UserRegisterView(CreateAPIView):
     userpref = models.UserPref(
         user=model,
         age='b',
-zx        gender='f',
+        gender='f',
         size='s'
     )
     userpref.create()
     '''
 
-    
+
+## Do I need a CreateUserPrefAPIView?    
+"""
+class CreateUserPrefView(CreateAPIView):
+    model = models.UserPref
+    serializer_class = serializers.UserPrefSerializer
+
+    def post(self, request, *args, **kwargs):
+        super().post(request, *args, **kwargs)
+        return self.create(request, *args, **kwargs)
+"""
+
+
+## Should I use a seperate view to create the model?
 class UserPrefDetailView(mixins.CreateModelMixin,
-                         mixins.RetrieveModelMixin,
-                         mixins.UpdateModelMixin,
-                         GenericAPIView):
+                         RetrieveUpdateAPIView):
     '''
     viewclass formally known as class UserPrefDetailView(RetrieveUpdateAPIView):    
     Review or update user preferences.
     '''
-    ## Should be Create Retrieve Update APIView.
-    ## Selecting nothing is the same as selecting everything.
+    ## Should be Create Retrieve Update APIView... maybe.
+    ## Selecting nothing should be same as selecting everything.
     model = models.UserPref
     lookup_field = 'pk'
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
@@ -57,8 +68,9 @@ class UserPrefDetailView(mixins.CreateModelMixin,
     ## user = self.request.user
     ## queryset = models.UserPref.objects.filter(user=self.user)
     queryset = models.UserPref.objects.all()
-    
+
     def post(self, request, format=None):
+        super().post(request, format=None)
         serializer = serializers.UserPrefSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -96,6 +108,13 @@ class UserPrefViewSet(mixins.CreateModelMixin,
     serializer_class = serializers.UserPrefSerializer
     # Does this need more attrs?  Should I use this at all?
 
+
+class UserDogListCreateView(ListCreateAPIView):
+    '''
+    List all UserDog instances for the specified user.
+    '''
+    model = models.UserDog
+    
 
 class UserDogDetailView(RetrieveUpdateAPIView):
     '''
