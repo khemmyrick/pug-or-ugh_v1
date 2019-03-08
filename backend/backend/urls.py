@@ -16,15 +16,8 @@ Including another URLconf
 from django.conf.urls import url, include
 from django.contrib import admin
 
-from rest_framework import routers
-
 from rest_framework.authtoken import views
 
-from pugorugh import views as appviews
-
-router = routers.SimpleRouter()
-router.register(r'dogs', appviews.DogViewSet)
-router.register(r'userprefs', appviews.UserPrefViewSet)
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
@@ -32,5 +25,4 @@ urlpatterns = [
     url(r'^api-auth/', include('rest_framework.urls',
                                namespace='rest_framework')),
     url(r'^api-token-auth/', views.obtain_auth_token),
-    url(r'^api/dog/', include(router.urls, namespace='v1')),
 ]

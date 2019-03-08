@@ -74,7 +74,7 @@ class Pregame(object):
             'kimorasex'
         )
         self.user3_dre = User.objects.create_user(
-            'Ande Young',
+            'Andre Young',
             'billiondollarbeats@aftermath.com',
             'sixmilliondollarsman'
         )
@@ -82,19 +82,19 @@ class Pregame(object):
         # Sample UserPrefs.
         self.userpref1_wahh = UserPref(
             user=self.user1_wahh,
-            age=45,
+            age='y',
             gender='m',
             size='m',
         )
         self.userpref2_russ = UserPref(
             user=self.user2_russ,
-            age=45,
+            age='a,s',
             gender='m',
             size='xl',
         )
         self.userpref3_dre = UserPref(
             user=self.user3_dre,
-            age=42,
+            age='b',
             gender='f',
             size='m',
         )
