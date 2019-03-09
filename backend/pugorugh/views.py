@@ -183,7 +183,7 @@ class UserDogUndecidedNextView(generics.RetrieveAPIView):
         queryset = Dog.objects.filter(
             age__range=get_age_range(user_pref.age),
             gender__in=user_pref.gender,
-            size__in=user_pref.size
+            size__in=list(user_pref.size.split(","))
         ).exclude(
             Q(users_dog__user=self.request.user,
               users_dog__status='l') | Q(users_dog__user=self.request.user,

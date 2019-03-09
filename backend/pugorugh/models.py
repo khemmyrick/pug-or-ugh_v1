@@ -23,7 +23,7 @@ STATUSES = (
 class Dog(models.Model):
     '''
     A model representing dogs on the site.
-    
+
     attrs:
         name: a str
         image_filename: a str
