@@ -203,7 +203,6 @@ class PugOrUghViewTests(Pregame, TestCase):
         resp = view(request)
         self.assertEqual(resp.status_code, 404)
         request = self.factory.put(reverse('dog-liked', kwargs={'pk': '3'}))
-        print(self.userdog3.pk)
         force_authenticate(request, user=user)
         resp = view(request)
         self.assertEqual(resp.status_code, 201)
