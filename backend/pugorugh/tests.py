@@ -194,22 +194,18 @@ class PugOrUghViewTests(Pregame, TestCase):
     def test_user_dog_liked_view(self):
         view = views.UserDogLikedView.as_view()
         user = self.user3_dre
-        token, is_created = Token.objects.get_or_create(user=user)
+        # token, is_created = Token.objects.get_or_create(user=user)
         # data = {'id': user.id,
         #        'token': token,
         #        }
-        # self.factory.credentials(HTTP_AUTHORIZATION='Token ' + str(token))
         request = self.factory.put(reverse('dog-liked', kwargs={'pk': '-1'}))
         force_authenticate(request, user=user)
         resp = view(request)
-        # response = self.client.put(reverse('dog-liked', kwargs={'pk': '-1'}))
         self.assertEqual(resp.status_code, 404)
-        # check for a 201 when pk is 2
         request = self.factory.put(reverse('dog-liked', kwargs={'pk': '3'}))
         print(self.userdog3.pk)
         force_authenticate(request, user=user)
         resp = view(request)
-        # resp = self.client.put(reverse('dog-liked', kwargs={'pk': '2'}))
         self.assertEqual(resp.status_code, 201)
         # dog = self.dog2_eve
         # data = 
