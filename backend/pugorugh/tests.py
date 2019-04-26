@@ -164,11 +164,6 @@ class PugOrUghModelTests(Pregame, TestCase):
 
 
 class UserRegTests(Pregame, APITestCase):
-    # def setUp(self):
-    #    self.data = {'name': 'Fido',
-    #                 'email': 'doggy@dogworld.com',
-    #                 'password': 'itsbacon12345bitsy'}
-
     def test_create_user(self):
         """
         Ensure we can create a new account object.
@@ -188,6 +183,9 @@ class UserRegTests(Pregame, APITestCase):
 class PugOrUghViewTests(Pregame, TestCase):
     '''Pug-or-ugh view tests.'''
     def test_user_register_view(self):
+        """
+        Confirm we can create a UserPref object for our user object.
+        """
         resp = self.client.post(
             '/api/user/', 
             {'username': 'andre',
@@ -233,25 +231,14 @@ class PugOrUghViewTests(Pregame, TestCase):
         force_authenticate(request, user=user)
         resp = view(request)
         self.assertEqual(resp.status_code, 404)
+
         request = self.factory.put(reverse_lazy('dog-liked', kwargs={'pk': '3'}))
         print('reversed req: ' + str(request))
-        ## use reverse_lazy? ####################################################
+        # use reverse_lazy?
         force_authenticate(request, user=user)
         resp = view(request)
         self.assertEqual(resp.status_code, 201)
-        # dog = self.dog2_eve
-        # data = 
-        # request = self.factory.put(
-        #    '/api/dog/{}/liked/'.format(dog.pk),
-        #    dog=dog,
-        #    defaults={'user': user,
-        #              'dog': dog,
-        #              'status': 'l'}
-        # )
-        # force_authenticate(request, user=user)
-        # resp = view(request)
-        # self.assertEqual(resp.status_code, 200)
-
+        # Why do I get a 404?
 
 
 class PugOrUghUtilsTest(TestCase):
