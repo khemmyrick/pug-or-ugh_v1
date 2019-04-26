@@ -14,7 +14,7 @@ class UserRegisterView(generics.CreateAPIView):
     permission_classes = (permissions.AllowAny,)
     # AllowAny needed here, to create new user.
     model = get_user_model()
-    
+
     def post(self, request, format=None):
         serializer = UserSerializer(data=request.data)        
         serializer.is_valid(raise_exception=True)

@@ -1,15 +1,18 @@
 from django.core.exceptions import ValidationError
-from django.core.urlresolvers import reverse
+from django.core.urlresolvers import reverse, reverse_lazy
 from django.test import TestCase
 from django.template import Context, Template
 from django.contrib.auth.models import User
 from django.utils import timezone
 ## from django_downloadview import setup_view
+from rest_framework import status
 from rest_framework.authtoken.models import Token
-from rest_framework.test import APIRequestFactory, force_authenticate
+from rest_framework.test import (APIRequestFactory, APITestCase,
+                                 force_authenticate)
 from . import views
 from .models import Dog, UserDog, UserPref
 from .utils import get_age_range
+from .serializers import DogSerializer, UserSerializer, UserPrefSerializer
 
 
 # Create your tests here.
@@ -132,6 +135,11 @@ class Pregame(object):
             status='d'
         )
         self.userdog3.save()
+        
+        self.dog_serializer = DogSerializer(instance=self.dog1_earl)
+        self.user_serializer = UserSerializer(instance=self.user1_wahh)
+        self.userpref_serializer = UserPrefSerializer(instance=self.userpref1_wahh)
+        
 
 
 class PugOrUghModelTests(Pregame, TestCase):
@@ -153,6 +161,28 @@ class PugOrUghModelTests(Pregame, TestCase):
         self.assertEqual(self.userdog1.status, 'l')
         self.assertNotEqual(self.userdog2.dog, self.dog2_eve)
         self.assertLessEqual(self.userdog2.created_at, timezone.now())
+
+
+class UserRegTests(Pregame, APITestCase):
+    # def setUp(self):
+    #    self.data = {'name': 'Fido',
+    #                 'email': 'doggy@dogworld.com',
+    #                 'password': 'itsbacon12345bitsy'}
+
+    def test_create_user(self):
+        """
+        Ensure we can create a new account object.
+        """
+        url = reverse('register-user')
+        wahh_dict = UserSerializer(self.user1_wahh).data
+
+        response = self.client.post(url, wahh_dict, format='json')
+
+        # Why do I get a 400 status_code?
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(User.objects.count(), 3)
+        self.assertEqual(User.objects.get(email='wahh@doublerdogs.com').username, 'Joaquin')
 
 
 class PugOrUghViewTests(Pregame, TestCase):
@@ -199,10 +229,13 @@ class PugOrUghViewTests(Pregame, TestCase):
         #        'token': token,
         #        }
         request = self.factory.put(reverse('dog-liked', kwargs={'pk': '-1'}))
+        print('first req: ' + str(request))
         force_authenticate(request, user=user)
         resp = view(request)
         self.assertEqual(resp.status_code, 404)
-        request = self.factory.put(reverse('dog-liked', kwargs={'pk': '3'}))
+        request = self.factory.put(reverse_lazy('dog-liked', kwargs={'pk': '3'}))
+        print('reversed req: ' + str(request))
+        ## use reverse_lazy? ####################################################
         force_authenticate(request, user=user)
         resp = view(request)
         self.assertEqual(resp.status_code, 201)
@@ -234,3 +267,37 @@ class PugOrUghUtilsTest(TestCase):
         self.assertEqual((1, 26), get_age_range('b,y'))
         self.assertEqual((13, 38), get_age_range('y,a'))
         self.assertEqual((25, 97), get_age_range('a,s'))
+
+class PugOrUghSerializersTest(Pregame, TestCase):
+    '''Pug-or-Ugh serializers test.'''
+    def test_contains_expected_fields(self):
+        data_dog = self.dog_serializer.data
+        data_user = self.user_serializer.data
+        data_userpref = self.userpref_serializer.data
+        self.assertEqual(set(data_dog.keys()), set(['id',
+                                                    'name',
+                                                    'image_filename',
+                                                    'breed',
+                                                    'age',
+                                                    'gender',
+                                                    'size',
+                                                    'created_at']))
+        self.assertEqual(set(data_userpref.keys()), set(['user',
+                                                     'age',
+                                                     'gender',
+                                                     'size',
+                                                     'created_at',
+                                                     'id']))
+        self.assertEqual(set(data_user.keys()), set(['last_login',
+                                                     'is_active',
+                                                     'username',
+                                                     'first_name',
+                                                     'last_name',
+                                                     'email',
+                                                     'is_staff',
+                                                     'date_joined',
+                                                     'is_superuser',
+                                                     'groups',
+                                                     'user_permissions',
+                                                     'id']))
+
