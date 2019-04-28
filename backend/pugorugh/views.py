@@ -44,22 +44,6 @@ class RetrieveUpdateUserPrefView(generics.RetrieveUpdateAPIView):
         #    return Response(serializer.data)
         # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-"""
-class ListCreateDogView(generics.ListCreateAPIView):
-    '''For staff to create dogs.'''
-    permission_classes = (permissions.IsAdminUser,)
-    queryset = Dog.objects.all()
-    serializer_class = DogSerializer
-    ## Get back to these 2.
-"""
-
-'''
-class RetrieveUpdateDestroyDog(generics.RetrieveUpdateDestroyAPIView):
-    """For staff to update dogs."""
-    permission_classes = (permissions.IsAdminUser)
-    pass
-'''
-
 
 class UserDogLikedView(generics.UpdateAPIView):
     queryset = UserDog.objects.all()
