@@ -23,8 +23,7 @@ USER_DATA = {'username': 'test_user',
 # Create your tests here.
 class CustomPugorUghTestMixin(object):
     def setUp(self):
-        self.factory = APIRequestFactory()
-        
+        # self.factory = APIRequestFactory()
         self.user0 = User.objects.create_user(
             username='test_user',
             email='test@example.com', # Same data as USER_DATA
@@ -67,6 +66,7 @@ class Pregame(object):
         # self.api_client.credentials(HTTP_AUTHORIZATION='Token ' + token)
         # Request factory.
         self.factory = APIRequestFactory()
+        self.api_client = APIClient()
 
         # Sample Dogs.
         self.dog1 = Dog(
@@ -99,12 +99,12 @@ class Pregame(object):
 
         # Sample Users.
         # User0 must exist BEFORE client can "login" as user0.
-        self.user0 = User.objects.create_user(
-            username='test_user',
-            email='test@example.com', # Same data as USER_DATA
-            password='p4ssw0rd'
-        )
-        self.user0.save()
+        # self.user0 = User.objects.create_user(
+        #    username='test_user',
+        #    email='test@example.com', # Same data as USER_DATA
+        #    password='p4ssw0rd'
+        # )
+        # self.user0.save()
         self.user1 = User.objects.create_user(
             'User1',
             'user1@example.com',
@@ -135,8 +135,8 @@ class Pregame(object):
         self.userpref2 = UserPref(
             user=self.user2,
             age='a,s',
-            gender='m',
-            size='xl',
+            gender='f',
+            size='l',
         )
         self.userpref2.save()
         self.userpref3 = UserPref(
@@ -196,7 +196,8 @@ class PugOrUghModelTests(Pregame, TestCase):
 class UserRegTests(CustomPugorUghTestMixin, APITestCase):
     def test_create_user(self):
         """
-        Ensure we can create a new account object.
+        Ensure we can create a new user object.
+        New UserPref object is simultaneously created.
         """
         
         # auth = self.client.post('/api-token-auth/', USER_DATA)
@@ -217,23 +218,13 @@ class UserRegTests(CustomPugorUghTestMixin, APITestCase):
         # check user via username.  email and/or password may not be available for testing suite?
         self.assertEqual(User.objects.get(username='new_user').username,
                          'new_user')
+        user_pref = UserPref.objects.get(user=User.objects.get(username='new_user'))
+        self.assertNotEqual(user_pref, None)
+        self.assertEqual(user_pref.age, 'b')
 
 
 class PugOrUghViewTests(Pregame, TestCase):
     '''Pug-or-ugh view tests.'''
-    def test_user_register_view(self):
-        """
-        Confirm we can create a UserPref object for our user object.
-        """
-        resp = self.client.post(
-            '/api/user/', 
-            {'username': 'User3',
-             'password': 'sixmilliondollarsman'}
-        )
-        user_pref = UserPref.objects.get(user=self.user3)
-        self.assertEqual(resp.status_code, 201)
-        self.assertNotEqual(user_pref, None)
-
     def test_retrieve_update_user_pref_view(self):
         view = views.RetrieveUpdateUserPrefView.as_view()
         user = self.user3
@@ -258,26 +249,45 @@ class PugOrUghViewTests(Pregame, TestCase):
         resp = view(request)
         self.assertEqual(resp.status_code, 401)
 
-    def test_user_dog_liked_view(self):
+    def test_user_dog_liked_view_bad(self):
         view = views.UserDogLikedView.as_view()
         user = self.user3
-        # token, is_created = Token.objects.get_or_create(user=user)
-        # data = {'id': user.id,
-        #        'token': token,
-        #        }
+
         request = self.factory.put(reverse('dog-liked', kwargs={'pk': '-1'}))
-        print('first req: ' + str(request))
         force_authenticate(request, user=user)
         resp = view(request)
         self.assertEqual(resp.status_code, 404)
 
-        request = self.factory.put(reverse_lazy('dog-liked', kwargs={'pk': '3'}))
-        print('reversed req: ' + str(request))
-        # use reverse_lazy?
+    def test_user_dog_liked_view(self):
+        '''
+        Test UserDogLikedView (first attempt)
+        '''
+        view = views.UserDogLikedView.as_view()
+        user = self.user3
+        dog = self.dog2
+        # request = self.factory.put(reverse('dog-liked', kwargs={'pk': '2'}))
+        request = self.factory.put(reverse('dog-liked', kwargs={'pk': '2'}))
         force_authenticate(request, user=user)
         resp = view(request)
+        print('Dog2 pk: {}'.format(str(self.dog2.pk)))
         self.assertEqual(resp.status_code, 201)
         # Why do I get a 404?
+
+
+class UDLVTest(Pregame, CustomPugorUghTestMixin, APITestCase):        
+    def test_udlv(self):
+        '''
+        Test UserDogLikedView (2nd Attempt)
+        '''
+        view = views.UserDogLikedView.as_view()
+        user = self.user3
+        dog = self.dog2
+        request = self.api_client.put('/api/dog/1/liked/')
+        # request = self.factory.put(reverse('dog-liked', kwargs={'pk': '2'}))
+        print('Dog2 pk: {}'.format(str(self.dog2.pk)))
+
+        self.assertEqual(user.username, self.user3.username)
+        self.assertEqual(resp.status_code, 201)
 
 
 class PugOrUghUtilsTest(TestCase):
