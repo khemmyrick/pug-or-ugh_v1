@@ -21,25 +21,39 @@ USER_DATA = {'username': 'test_user',
 
 
 # Create your tests here.
+class CustomPugorUghTestMixin(object):
+    def setUp(self):
+        self.factory = APIRequestFactory()
+        
+        self.user0 = User.objects.create_user(
+            username='test_user',
+            email='test@example.com', # Same data as USER_DATA
+            password='p4ssw0rd'
+        )
+        self.user0.save()
+        
+        auth = self.client.post('/api-token-auth/', USER_DATA)
+        token = auth.data['token']
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + token)
+
+
 class Pregame(object):
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        cls.api_client = APIClient()
-        # user0 = User.objects.create_user(
-        #    username='test_user',
-        #    email='test@example.com', # Same data as USER_DATA
-        #    password='p4ssw0rd'
-        # )
-        # user0.save()
-
-    @classmethod
-    def tearDownClass(cls):
-        super().tearDownClass()
-        cls.api_client = None
-        # u = User.objects.get(username='test_user')
-        # u.delete()
-
+    # @classmethod
+    # def setUpClass(cls):
+    #    super().setUpClass()
+    #    cls.api_client = APIClient()
+    #    # user0 = User.objects.create_user(
+    #    #    username='test_user',
+    #    #    email='test@example.com', # Same data as USER_DATA
+    #    #    password='p4ssw0rd'
+    #    # )
+    #    # user0.save()
+    # @classmethod
+    # def tearDownClass(cls):
+    #    super().tearDownClass()
+    #    cls.api_client = None
+    #    # u = User.objects.get(username='test_user')
+    #    # u.delete()
     def setUp(self):
         """Setup function that can be repeated for all test cases.
         
@@ -47,11 +61,10 @@ class Pregame(object):
         Creates sample context dictionaries for certain Menu and Item objects.
         """
 		# USER_DATA is a Dict holding my test user username/password
-        auth = self.api_client.post('/api-token-auth/', USER_DATA)
-        token = auth.data['token']
+        # auth = self.api_client.post('/api-token-auth/', USER_DATA)
+        # token = auth.data['token']
         # Use Token Auth for APIClient for each def test_
-        self.api_client.credentials(HTTP_AUTHORIZATION='Token ' + token)
-
+        # self.api_client.credentials(HTTP_AUTHORIZATION='Token ' + token)
         # Request factory.
         self.factory = APIRequestFactory()
 
@@ -85,11 +98,13 @@ class Pregame(object):
         self.dog3.save()
 
         # Sample Users.
+        # User0 must exist BEFORE client can "login" as user0.
         self.user0 = User.objects.create_user(
             username='test_user',
             email='test@example.com', # Same data as USER_DATA
             password='p4ssw0rd'
         )
+        self.user0.save()
         self.user1 = User.objects.create_user(
             'User1',
             'user1@example.com',
@@ -155,7 +170,6 @@ class Pregame(object):
         self.dog_serializer = DogSerializer(instance=self.dog1)
         self.user_serializer = UserSerializer(instance=self.user1)
         self.userpref_serializer = UserPrefSerializer(instance=self.userpref1)
-        
 
 
 class PugOrUghModelTests(Pregame, TestCase):
@@ -179,24 +193,30 @@ class PugOrUghModelTests(Pregame, TestCase):
         self.assertLessEqual(self.userdog2.created_at, timezone.now())
 
 
-class UserRegTests(Pregame, APITestCase):
+class UserRegTests(CustomPugorUghTestMixin, APITestCase):
     def test_create_user(self):
         """
         Ensure we can create a new account object.
         """
-        url = reverse('register-user')
-        wahh_dict = {'username': 'User', 'email': 'email@email.com', 'password': 'inconceivable'}
-        # wahh_dict = UserSerializer(self.user1).data
-        # wahh_dict = self.user1.data
-        # print('wahh_dict is a: '.format(str(wahh_dict)))
-        response = self.client.post(url, wahh_dict, format='json')
-        print('THE RESP IN QUESTION IS A: '.format(str(response)))
-        # Why do I get a 400 status_code?
+        
+        # auth = self.client.post('/api-token-auth/', USER_DATA)
+        # token = auth.data['token']
+        # self.client.credentials(HTTP_AUTHORIZATION='Token ' + token)
 
+        # new_data will provide blueprint for new_user.
+        new_data = {'username': 'new_user',
+                    'email': 'newuser@example.com',
+                    'password': 'bendtheKnee806GoT'}
+                    
+        # url gets us to view being tested.
+        url = reverse('register-user')
+        response = self.client.post(url, new_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(User.objects.count(), 4)
-        # self.assertEqual(User.objects.get(email='user1@example.com').username, 'User1')
-        self.assertEqual(User.objects.get(email='email@email.com').username, 'User')
+        self.assertEqual(User.objects.count(), 2)
+        # setUp user0 plus new_user == 2
+        # check user via username.  email and/or password may not be available for testing suite?
+        self.assertEqual(User.objects.get(username='new_user').username,
+                         'new_user')
 
 
 class PugOrUghViewTests(Pregame, TestCase):
