@@ -264,18 +264,18 @@ class PugOrUghViewTests(Pregame, TestCase):
         '''
         view = views.UserDogLikedView.as_view()
         user = self.user3
-        # request = self.factory.put(reverse('dog-liked', kwargs={'pk': '2'}))
         request = self.factory.put(reverse('dog-liked', kwargs={'pk': '2'}))
         # self.dog2.pk is 2. Signed in user is user in question.
         force_authenticate(request, user=user)
-        resp = view(request, user=user, dog=self.dog2, pk='3')
-        print(resp)
+        resp = view(request, pk='2')
+        self.userdog3.refresh_from_db()
         self.userdog3.save()
         # This response is HTML, not json.
         self.assertEqual(resp.status_code, 200)
-        print(self.userdog3.pk)
+        self.assertEqual(resp.data, "updated to liked")
         self.assertNotEqual(self.userdog3.status, 'd')
-        # UserDog in question should have status of 'l' after view is accessed.
+        self.assertEqual(self.userdog3.status, 'l')
+        # UserDog in question SHOULD have status of 'l' after view is accessed.
 
     def test_user_dog_disliked_view(self):
         '''
