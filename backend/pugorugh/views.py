@@ -46,6 +46,11 @@ class RetrieveUpdateUserPrefView(generics.RetrieveUpdateAPIView):
 
 
 class UserDogLikedView(generics.UpdateAPIView):
+    '''
+    View for when user presses like button on a dog.
+    Sends currently displayed dog to liked list,
+    then advances to next dog in current list.
+    '''
     queryset = UserDog.objects.all()
     serializer_class = DogSerializer
 
@@ -94,6 +99,11 @@ class UserDogLikedNextView(generics.UpdateAPIView):
 
 
 class UserDogDislikedView(generics.UpdateAPIView):
+    '''
+    View for when user presses dislike button on a dog.
+    Sends currently displayed dog to disliked list,
+    then advances to next dog in current list.
+    '''
     queryset = UserDog.objects.all()
     serializer_class = DogSerializer
 

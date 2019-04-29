@@ -264,6 +264,25 @@ class PugOrUghViewTests(Pregame, TestCase):
         '''
         view = views.UserDogLikedView.as_view()
         user = self.user3
+        # request = self.factory.put(reverse('dog-liked', kwargs={'pk': '2'}))
+        request = self.factory.put(reverse('dog-liked', kwargs={'pk': '2'}))
+        # self.dog2.pk is 2. Signed in user is user in question.
+        force_authenticate(request, user=user)
+        resp = view(request, user=user, dog=self.dog2, pk='3')
+        print(resp)
+        self.userdog3.save()
+        # This response is HTML, not json.
+        self.assertEqual(resp.status_code, 200)
+        print(self.userdog3.pk)
+        self.assertNotEqual(self.userdog3.status, 'd')
+        # UserDog in question should have status of 'l' after view is accessed.
+
+    def test_user_dog_disliked_view(self):
+        '''
+        Test UserDogDislikedView
+        '''
+        view = views.UserDogDislikedView.as_view()
+        user = self.user3
         dog = self.dog2
         request = self.factory.put(reverse('dog-liked', kwargs={'pk': '3'}))
         # request = self.api_client.put('/api/dog/3/liked', kwargs={'pk': '3'})
@@ -271,10 +290,7 @@ class PugOrUghViewTests(Pregame, TestCase):
         force_authenticate(request, user=user)
         resp = view(request, pk='3')
         # This response is HTML, not json.
-        print(str(resp))
-        print('Dog2 pk: {}'.format(str(self.dog2.pk)))
         self.assertEqual(resp.status_code, 200)
-        # AssertionError 404 != 200
 
 
 class PugOrUghUtilsTest(TestCase):
