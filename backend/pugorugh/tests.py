@@ -260,41 +260,21 @@ class PugOrUghViewTests(Pregame, TestCase):
 
     def test_user_dog_liked_view(self):
         '''
-        Test UserDogLikedView (first attempt)
+        Test UserDogLikedView
         '''
         view = views.UserDogLikedView.as_view()
         user = self.user3
         dog = self.dog2
-        request = self.factory.put(reverse('dog-liked', kwargs={'pk': '2'}))
+        request = self.factory.put(reverse('dog-liked', kwargs={'pk': '3'}))
+        # request = self.api_client.put('/api/dog/3/liked', kwargs={'pk': '3'})
         # What do I need to send with this request?
         force_authenticate(request, user=user)
-        resp = view(request)
+        resp = view(request, pk='3')
         # This response is HTML, not json.
         print(str(resp))
         print('Dog2 pk: {}'.format(str(self.dog2.pk)))
         self.assertEqual(resp.status_code, 200)
         # AssertionError 404 != 200
-
-
-class UDLVTest(Pregame, CustomPugorUghTestMixin, APITestCase):        
-    def test_udlv(self):
-        '''
-        Test UserDogLikedView (2nd Attempt)
-        '''
-        # view = views.UserDogLikedView.as_view()
-        user = self.user3
-        dog = self.dog2
-        request = self.api_client.put('/api/dog/1/liked/')
-        resp = self.api_client.put(reverse('dog-liked', kwargs={'pk': '2'}))
-        print(str(resp))
-        force_authenticate(request, user=user)
-        # How do I use self.api_client.put here?
-        # request = self.factory.put(reverse('dog-liked', kwargs={'pk': '2'}))
-        print('Dog2 pk: {}'.format(str(self.dog2.pk)))
-        # resp = view(request)
-        self.assertEqual(user.username, self.user3.username)
-        self.assertEqual(resp.status_code, 200)
-        # AssertionError 401 != 200
 
 
 class PugOrUghUtilsTest(TestCase):
