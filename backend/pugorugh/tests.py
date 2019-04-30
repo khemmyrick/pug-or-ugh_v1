@@ -9,9 +9,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.test import (APIRequestFactory, APITestCase,
-                                 APIClient, force_authenticate)
+                                 force_authenticate)
 from . import views
-# from .models import Dog, UserDog, UserPref
 from . import models
 from .utils import get_age_range
 from .serializers import DogSerializer, UserSerializer, UserPrefSerializer
@@ -25,7 +24,6 @@ USER_DATA = {'username': 'test_user',
 # Create your tests here.
 class CustomPugorUghTestMixin(object):
     def setUp(self):
-        # self.factory = APIRequestFactory()
         self.user0 = User.objects.create_user(
             username='test_user',
             email='test@example.com', # Same data as USER_DATA
@@ -39,36 +37,14 @@ class CustomPugorUghTestMixin(object):
 
 
 class Pregame(object):
-    # @classmethod
-    # def setUpClass(cls):
-    #    super().setUpClass()
-    #    cls.api_client = APIClient()
-    #    # user0 = User.objects.create_user(
-    #    #    username='test_user',
-    #    #    email='test@example.com', # Same data as USER_DATA
-    #    #    password='p4ssw0rd'
-    #    # )
-    #    # user0.save()
-    # @classmethod
-    # def tearDownClass(cls):
-    #    super().tearDownClass()
-    #    cls.api_client = None
-    #    # u = User.objects.get(username='test_user')
-    #    # u.delete()
     def setUp(self):
         """Setup function that can be repeated for all test cases.
         
         Creates sample Dog, UserDog, UserPref and User objects.
         Creates sample context dictionaries for certain Menu and Item objects.
         """
-		# USER_DATA is a Dict holding my test user username/password
-        # auth = self.api_client.post('/api-token-auth/', USER_DATA)
-        # token = auth.data['token']
-        # Use Token Auth for APIClient for each def test_
-        # self.api_client.credentials(HTTP_AUTHORIZATION='Token ' + token)
         # Request factory.
         self.factory = APIRequestFactory()
-        self.api_client = APIClient()
 
         # Sample Dogs.
         self.dog1 = models.Dog(
@@ -174,10 +150,6 @@ class Pregame(object):
             status='l'
         )
         self.userdog4.save()
-        
-        self.dog_serializer = DogSerializer(instance=self.dog1)
-        self.user_serializer = UserSerializer(instance=self.user1)
-        self.userpref_serializer = UserPrefSerializer(instance=self.userpref1)
 
 
 class PugOrUghModelTests(Pregame, TestCase):
@@ -207,12 +179,6 @@ class UserRegTests(CustomPugorUghTestMixin, APITestCase):
         Ensure we can create a new user object.
         New UserPref object is simultaneously created.
         """
-        
-        # auth = self.client.post('/api-token-auth/', USER_DATA)
-        # token = auth.data['token']
-        # self.client.credentials(HTTP_AUTHORIZATION='Token ' + token)
-
-        # new_data will provide blueprint for new_user.
         new_data = {'username': 'new_user',
                     'email': 'newuser@example.com',
                     'password': 'bendtheKnee806GoT'}
@@ -283,7 +249,6 @@ class PugOrUghViewTests(Pregame, TestCase):
         self.assertEqual(resp.data, "updated to liked")
         self.assertNotEqual(self.userdog3.status, 'd')
         self.assertEqual(self.userdog3.status, 'l')
-        # UserDog in question SHOULD have status of 'l' after view is accessed.
 
     def test_user_dog_disliked_view(self):
         '''
@@ -302,7 +267,6 @@ class PugOrUghViewTests(Pregame, TestCase):
         self.assertEqual(resp.data, "updated to disliked")
         self.assertNotEqual(self.userdog1.status, 'l')
         self.assertEqual(self.userdog1.status, 'd')
-        # UserDog in question SHOULD have status of 'd' after view is accessed.
 
     def test_user_dog_undecided_view(self):
         '''
@@ -347,7 +311,7 @@ class PugOrUghViewTests(Pregame, TestCase):
         resp = view(request, pk='2')
         # user3 has only disliked dog2, so next_dog is still dog2.
         self.assertEqual(resp.data, serializer.data)
-        
+
     def test_user_dog_liked_next_view(self):
         view = views.UserDogLikedNextView.as_view()
         user = self.user1
@@ -359,7 +323,6 @@ class PugOrUghViewTests(Pregame, TestCase):
         resp = view(request, pk='2')
         # user1 liked dogs 2 and 3.  next_dog is dog3.
         self.assertEqual(resp.data, serializer.data)
-        
 
 
 class PugOrUghUtilsTest(TestCase):
@@ -380,33 +343,37 @@ class PugOrUghUtilsTest(TestCase):
 class PugOrUghSerializersTest(Pregame, TestCase):
     '''Pug-or-Ugh serializers test.'''
     def test_contains_expected_fields(self):
-        data_dog = self.dog_serializer.data
-        data_user = self.user_serializer.data
-        data_userpref = self.userpref_serializer.data
-        self.assertEqual(set(data_dog.keys()), set(['id',
-                                                    'name',
-                                                    'image_filename',
-                                                    'breed',
-                                                    'age',
-                                                    'gender',
-                                                    'size',
-                                                    'created_at']))
-        self.assertEqual(set(data_userpref.keys()), set(['user',
-                                                     'age',
-                                                     'gender',
-                                                     'size',
-                                                     'created_at',
-                                                     'id']))
-        self.assertEqual(set(data_user.keys()), set(['last_login',
-                                                     'is_active',
-                                                     'username',
-                                                     'first_name',
-                                                     'last_name',
-                                                     'email',
-                                                     'is_staff',
-                                                     'date_joined',
-                                                     'is_superuser',
-                                                     'groups',
-                                                     'user_permissions',
-                                                     'id']))
+        dog_serializer = DogSerializer(instance=self.dog1)
+        user_serializer = UserSerializer(instance=self.user1)
+        userpref_serializer = UserPrefSerializer(instance=self.userpref1)
+
+        self.assertEqual(set(dog_serializer.data.keys()),
+                         set(['id',
+                              'name',
+                              'image_filename',
+                              'breed',
+                              'age',
+                              'gender',
+                              'size',
+                              'created_at']))
+        self.assertEqual(set(userpref_serializer.data.keys()),
+                         set(['user',
+                              'age',
+                              'gender',
+                              'size',
+                              'created_at',
+                              'id']))
+        self.assertEqual(set(user_serializer.data.keys()),
+                         set(['last_login',
+                              'is_active',
+                              'username',
+                              'first_name',
+                              'last_name',
+                              'email',
+                              'is_staff',
+                              'date_joined',
+                              'is_superuser',
+                              'groups',
+                              'user_permissions',
+                              'id']))
 
