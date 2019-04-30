@@ -4,13 +4,15 @@ from django.test import TestCase
 from django.template import Context, Template
 from django.contrib.auth.models import User
 from django.utils import timezone
+from django.core.exceptions import ObjectDoesNotExist
 ## from django_downloadview import setup_view
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.test import (APIRequestFactory, APITestCase,
                                  APIClient, force_authenticate)
 from . import views
-from .models import Dog, UserDog, UserPref
+# from .models import Dog, UserDog, UserPref
+from . import models
 from .utils import get_age_range
 from .serializers import DogSerializer, UserSerializer, UserPrefSerializer
 
@@ -69,7 +71,7 @@ class Pregame(object):
         self.api_client = APIClient()
 
         # Sample Dogs.
-        self.dog1 = Dog(
+        self.dog1 = models.Dog(
             name='Dog1',
             image_filename='dog1.png',
             breed='dog1',
@@ -78,7 +80,7 @@ class Pregame(object):
             size='xl',
         )
         self.dog1.save()
-        self.dog2 = Dog(
+        self.dog2 = models.Dog(
             name='Dog2',
             image_filename='dog2.png',
             breed='dog2',
@@ -87,7 +89,7 @@ class Pregame(object):
             size='l',
         )
         self.dog2.save()
-        self.dog3 = Dog(
+        self.dog3 = models.Dog(
             name='Dog3',
             image_filename='dog3.png',
             breed='dog3',
@@ -125,21 +127,21 @@ class Pregame(object):
         self.user3.save()
 
         # Sample UserPrefs.
-        self.userpref1 = UserPref(
+        self.userpref1 = models.UserPref(
             user=self.user1,
             age='y',
             gender='m',
             size='m',
         )
         self.userpref1.save()
-        self.userpref2 = UserPref(
+        self.userpref2 = models.UserPref(
             user=self.user2,
             age='a,s',
             gender='f',
             size='l',
         )
         self.userpref2.save()
-        self.userpref3 = UserPref(
+        self.userpref3 = models.UserPref(
             user=self.user3,
             age='b',
             gender='f',
@@ -148,19 +150,19 @@ class Pregame(object):
         self.userpref3.save()
 
         # Sample UserDog Relationship Instances.
-        self.userdog1 = UserDog(
+        self.userdog1 = models.UserDog(
             user=self.user1,
             dog=self.dog2,
             status='l'
         )
         self.userdog1.save()
-        self.userdog2 = UserDog(
+        self.userdog2 = models.UserDog(
             user=self.user2,
             dog=self.dog1,
             status='l'
         )
         self.userdog2.save()
-        self.userdog3 = UserDog(
+        self.userdog3 = models.UserDog(
             user=self.user3,
             dog=self.dog2,
             status='d'
@@ -218,7 +220,7 @@ class UserRegTests(CustomPugorUghTestMixin, APITestCase):
         # check user via username.  email and/or password may not be available for testing suite?
         self.assertEqual(User.objects.get(username='new_user').username,
                          'new_user')
-        user_pref = UserPref.objects.get(user=User.objects.get(username='new_user'))
+        user_pref = models.UserPref.objects.get(user=User.objects.get(username='new_user'))
         self.assertNotEqual(user_pref, None)
         self.assertEqual(user_pref.age, 'b')
 
@@ -282,15 +284,44 @@ class PugOrUghViewTests(Pregame, TestCase):
         Test UserDogDislikedView
         '''
         view = views.UserDogDislikedView.as_view()
-        user = self.user3
-        dog = self.dog2
-        request = self.factory.put(reverse('dog-liked', kwargs={'pk': '3'}))
-        # request = self.api_client.put('/api/dog/3/liked', kwargs={'pk': '3'})
-        # What do I need to send with this request?
+        user = self.user1
+        request = self.factory.put(reverse('dog-liked', kwargs={'pk': '2'}))
+        # self.dog2.pk is 2. Signed in user is user in question.
         force_authenticate(request, user=user)
-        resp = view(request, pk='3')
+        resp = view(request, pk='2')
+        self.userdog1.refresh_from_db()
+        self.userdog1.save()
         # This response is HTML, not json.
         self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.data, "updated to disliked")
+        self.assertNotEqual(self.userdog1.status, 'l')
+        self.assertEqual(self.userdog1.status, 'd')
+        # UserDog in question SHOULD have status of 'd' after view is accessed.
+
+    def test_user_dog_undecided_view(self):
+        '''
+        Test UserDogUndecidedView
+        '''
+        view = views.UserDogUndecidedView.as_view()
+        user = self.user1
+        request = self.factory.put(reverse('dog-liked', kwargs={'pk': '2'}))
+        # self.dog2.pk is 2. Signed in user is user in question.
+        force_authenticate(request, user=user)
+        resp = view(request, pk='2')
+        self.assertRaises(ObjectDoesNotExist, self.userdog1.refresh_from_db)
+        # self.userdog1 is successfully deleted.
+        # This response is HTML, not json.
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.data, "deleted")
+
+    def test_user_dog_undecided_next_view(self):
+        pass
+
+    def test_user_dog_disliked_next_view(self):
+        pass
+        
+    def test_user_dog_liked_next_view(self):
+        pass
 
 
 class PugOrUghUtilsTest(TestCase):
