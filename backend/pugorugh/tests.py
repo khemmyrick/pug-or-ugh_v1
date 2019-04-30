@@ -110,19 +110,19 @@ class Pregame(object):
         self.user1 = User.objects.create_user(
             'User1',
             'user1@example.com',
-            'allofthebikes'
+            'all0fthebikes'
         )
         self.user1.save()
         self.user2 = User.objects.create_user(
             'User2',
             'user2@example.com',
-            'kimorasex'
+            'kimora1ex'
         )
         self.user2.save()
         self.user3 = User.objects.create_user(
             'User3',
             'user3@example.com',
-            'sixmilliondollarsman'
+            'sixmilliondollar5man'
         )
         self.user3.save()
 
@@ -168,6 +168,12 @@ class Pregame(object):
             status='d'
         )
         self.userdog3.save()
+        self.userdog4 = models.UserDog(
+            user=self.user1,
+            dog=self.dog3,
+            status='l'
+        )
+        self.userdog4.save()
         
         self.dog_serializer = DogSerializer(instance=self.dog1)
         self.user_serializer = UserSerializer(instance=self.user1)
@@ -315,13 +321,45 @@ class PugOrUghViewTests(Pregame, TestCase):
         self.assertEqual(resp.data, "deleted")
 
     def test_user_dog_undecided_next_view(self):
-        pass
+        view = views.UserDogUndecidedNextView.as_view()
+        user = self.user2
+        next_dog = self.dog2
+        not_next = self.dog3
+        serializer = DogSerializer(instance=next_dog)
+        serializer2 = DogSerializer(instance=not_next)
+        request = self.factory.get(reverse('dog-undecided-next',
+                                           kwargs={'pk': '2'}))
+        # user2 only liked dog1.  Dog3 is outside bounds of user2's prefs.
+        force_authenticate(request, user=user)
+        resp = view(request, pk='2')
+        self.assertEqual(resp.data, serializer.data)
+        self.assertNotEqual(resp.data, serializer2.data)
+        # AssertNotEqual makes sure UserPref is working.
 
     def test_user_dog_disliked_next_view(self):
-        pass
+        view = views.UserDogDislikedNextView.as_view()
+        user = self.user3
+        next_dog = self.dog2
+        serializer = DogSerializer(instance=next_dog)
+        request = self.factory.get(reverse('dog-disliked-next',
+                                           kwargs={'pk': '2'}))
+        force_authenticate(request, user=user)
+        resp = view(request, pk='2')
+        # user3 has only disliked dog2, so next_dog is still dog2.
+        self.assertEqual(resp.data, serializer.data)
         
     def test_user_dog_liked_next_view(self):
-        pass
+        view = views.UserDogLikedNextView.as_view()
+        user = self.user1
+        next_dog = self.dog3
+        serializer = DogSerializer(instance=next_dog)
+        request = self.factory.get(reverse('dog-liked-next',
+                                           kwargs={'pk': '2'}))
+        force_authenticate(request, user=user)
+        resp = view(request, pk='2')
+        # user1 liked dogs 2 and 3.  next_dog is dog3.
+        self.assertEqual(resp.data, serializer.data)
+        
 
 
 class PugOrUghUtilsTest(TestCase):
@@ -337,6 +375,7 @@ class PugOrUghUtilsTest(TestCase):
         self.assertEqual((1, 26), get_age_range('b,y'))
         self.assertEqual((13, 38), get_age_range('y,a'))
         self.assertEqual((25, 97), get_age_range('a,s'))
+
 
 class PugOrUghSerializersTest(Pregame, TestCase):
     '''Pug-or-Ugh serializers test.'''
