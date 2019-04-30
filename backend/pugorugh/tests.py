@@ -1,11 +1,8 @@
-from django.core.exceptions import ValidationError
-from django.core.urlresolvers import reverse, reverse_lazy
+from django.core.urlresolvers import reverse
 from django.test import TestCase
-from django.template import Context, Template
 from django.contrib.auth.models import User
 from django.utils import timezone
 from django.core.exceptions import ObjectDoesNotExist
-## from django_downloadview import setup_view
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.test import (APIRequestFactory, APITestCase,
