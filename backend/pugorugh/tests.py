@@ -13,33 +13,36 @@ from .utils import get_age_range
 from .serializers import DogSerializer, UserSerializer, UserPrefSerializer
 
 
-USER_DATA = {'username': 'test_user',
-             'email': 'test@example.com',
-             'password': 'p4ssw0rd'}
-
-
 # Create your tests here.
-class CustomPugorUghTestMixin(object):
+class UserZero(object):
+    """
+    A setUp object for UserRegTests.
+    """
     def setUp(self):
         self.user0 = User.objects.create_user(
             username='test_user',
-            email='test@example.com', # Same data as USER_DATA
+            email='test@example.com',
             password='p4ssw0rd'
         )
         self.user0.save()
         
-        auth = self.client.post('/api-token-auth/', USER_DATA)
+        auth = self.client.post('/api-token-auth/', 
+                                {'username': 'test_user',
+                                 'email': 'test@example.com',
+                                 'password': 'p4ssw0rd'})
         token = auth.data['token']
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + token)
 
 
 class Pregame(object):
+    """
+    Setup to repeat for all tests in a TestCase.
+
+    Creates sample Dog, UserDog, UserPref and User objects.
+    Creates sample context dictionaries for certain Menu and Item objects.
+    """
     def setUp(self):
-        """Setup function that can be repeated for all test cases.
-        
-        Creates sample Dog, UserDog, UserPref and User objects.
-        Creates sample context dictionaries for certain Menu and Item objects.
-        """
+
         # Request factory.
         self.factory = APIRequestFactory()
 
@@ -73,13 +76,6 @@ class Pregame(object):
         self.dog3.save()
 
         # Sample Users.
-        # User0 must exist BEFORE client can "login" as user0.
-        # self.user0 = User.objects.create_user(
-        #    username='test_user',
-        #    email='test@example.com', # Same data as USER_DATA
-        #    password='p4ssw0rd'
-        # )
-        # self.user0.save()
         self.user1 = User.objects.create_user(
             'User1',
             'user1@example.com',
@@ -170,7 +166,7 @@ class PugOrUghModelTests(Pregame, TestCase):
         self.assertLessEqual(self.userdog2.created_at, timezone.now())
 
 
-class UserRegTests(CustomPugorUghTestMixin, APITestCase):
+class UserRegTests(UserZero, APITestCase):
     def test_create_user(self):
         """
         Ensure we can create a new user object.
@@ -179,8 +175,6 @@ class UserRegTests(CustomPugorUghTestMixin, APITestCase):
         new_data = {'username': 'new_user',
                     'email': 'newuser@example.com',
                     'password': 'bendtheKnee806GoT'}
-                    
-        # url gets us to view being tested.
         url = reverse('register-user')
         response = self.client.post(url, new_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
