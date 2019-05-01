@@ -27,11 +27,11 @@
 `python manage.py shell`  
 - Get a token for your superuser.  
 
-`	from rest_framework.authtoken.models import Token`  
-`	from django.contrib.auth.models import User`  
-`	user = User.objects.get(id=1)`  
-`	token = Token.objects.create(user=user)`  
-`	token.key`  
+`    from rest_framework.authtoken.models import Token`  
+`    from django.contrib.auth.models import User`  
+`    user = User.objects.get(id=1)`  
+`    token = Token.objects.create(user=user)`  
+`    token.key`  
 Copy down the token information.
 
 ## Starting
