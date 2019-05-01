@@ -11,6 +11,9 @@ from .utils import get_age_range
 
 
 class UserRegisterView(generics.CreateAPIView):
+    '''
+    Creates a new user and a new UserPref object to store their preferences.
+    '''
     permission_classes = (permissions.AllowAny,)
     # AllowAny needed here, to create new user.
     model = get_user_model()
@@ -24,6 +27,9 @@ class UserRegisterView(generics.CreateAPIView):
 
 
 class RetrieveUpdateUserPrefView(generics.RetrieveUpdateAPIView):
+    '''
+    Allows authenticated user to update their UserPref.
+    '''
     queryset = UserPref.objects.all()
     serializer_class = UserPrefSerializer
 
@@ -33,23 +39,19 @@ class RetrieveUpdateUserPrefView(generics.RetrieveUpdateAPIView):
         return obj
 
     def put(self, request, *args, **kwargs):
-        # PUT method is for updating existing data.
         user_pref = self.get_object()
         serializer = UserPrefSerializer(user_pref, request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
-        # if serializer.is_valid():
-        #    serializer.save()
-        #    return Response(serializer.data)
-        # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserDogLikedView(generics.UpdateAPIView):
     '''
-    View for when user presses like button on a dog.
-    Sends currently displayed dog to liked list,
-    then advances to next dog in current list.
+    View for when user likes a dog.
+    Sets UserDog status to 'l'.
+    
+    pk: the dog being liked.
     '''
     queryset = UserDog.objects.all()
     serializer_class = DogSerializer
@@ -73,6 +75,11 @@ class UserDogLikedView(generics.UpdateAPIView):
 
 
 class UserDogLikedNextView(generics.UpdateAPIView):
+    '''
+    Retrieves next dog from queryset of liked dogs.
+    
+    pk: the current dog in the list.
+    '''
     queryset = UserDog.objects.all()
     serializer_class = DogSerializer
 
@@ -100,9 +107,10 @@ class UserDogLikedNextView(generics.UpdateAPIView):
 
 class UserDogDislikedView(generics.UpdateAPIView):
     '''
-    View for when user presses dislike button on a dog.
-    Sends currently displayed dog to disliked list,
-    then advances to next dog in current list.
+    View for when user dislikes a dog.
+    Sets UserDog status to 'd'.
+    
+    pk: the dog being disliked.
     '''
     queryset = UserDog.objects.all()
     serializer_class = DogSerializer
@@ -126,6 +134,11 @@ class UserDogDislikedView(generics.UpdateAPIView):
 
 
 class UserDogDislikedNextView(generics.UpdateAPIView):
+    '''
+    Retrieves next dog from queryset of disliked dogs.
+    
+    pk: the current dog in the list.
+    '''
     queryset = UserDog.objects.all()
     serializer_class = DogSerializer
 
@@ -152,6 +165,13 @@ class UserDogDislikedNextView(generics.UpdateAPIView):
 
 
 class UserDogUndecidedView(generics.UpdateAPIView):
+    '''
+    View for when user is undecided about a dog.
+    If UserDog object exists, deletes object,
+    removing dog from liked/disliked list.
+
+    pk: dog user is undecided on.
+    '''
     queryset = UserDog.objects.all()
     serializer_class = DogSerializer
 
@@ -169,10 +189,20 @@ class UserDogUndecidedView(generics.UpdateAPIView):
 
 
 class UserDogUndecidedNextView(generics.RetrieveAPIView):
+    '''
+    Retrieves next dog from queryset of dogs user hasn't decided on.
+    Queryset excludes dogs that don't match UserPref attributes.
+
+    pk: the current dog in the list.
+    '''
     queryset = Dog.objects.all()
     serializer_class = DogSerializer
 
     def get_queryset(self):
+        '''
+        Checks all dogs against user's preferences.
+        Excludes dogs user has already sorted.
+        '''
         user_pref = UserPref.objects.get(user=self.request.user)
         queryset = Dog.objects.filter(
             age__range=get_age_range(user_pref.age),
@@ -186,6 +216,9 @@ class UserDogUndecidedNextView(generics.RetrieveAPIView):
         return queryset
 
     def get_object(self):
+        '''
+        Find first relevant dog object after the current pk.
+        '''
         dog_id = self.kwargs.get('pk')
         if not self.get_queryset():
             raise Http404

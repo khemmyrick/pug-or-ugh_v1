@@ -80,7 +80,7 @@ class UserPref(models.Model):
 
 class UserDog(models.Model):
     """
-    Object for storing a user's like/dislike of a dog.
+    A model for storing a specific user's like/dislike of a dog.
     
     attrs:
         user: foreignkey user who has categorized a dog.
