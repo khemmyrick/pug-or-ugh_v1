@@ -4,7 +4,6 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import status
-from rest_framework.authtoken.models import Token
 from rest_framework.test import (APIRequestFactory, APITestCase,
                                  force_authenticate)
 from . import views
@@ -25,8 +24,8 @@ class UserZero(object):
             password='p4ssw0rd'
         )
         self.user0.save()
-        
-        auth = self.client.post('/api-token-auth/', 
+
+        auth = self.client.post('/api-token-auth/',
                                 {'username': 'test_user',
                                  'email': 'test@example.com',
                                  'password': 'p4ssw0rd'})
@@ -42,7 +41,6 @@ class Pregame(object):
     Creates sample context dictionaries for certain Menu and Item objects.
     """
     def setUp(self):
-
         # Request factory.
         self.factory = APIRequestFactory()
 
@@ -152,18 +150,27 @@ class PugOrUghModelTests(Pregame, TestCase):
         self.assertEqual(self.dog1.name, 'Dog1')
         self.assertNotEqual(self.dog1.gender, self.dog2.gender)
         self.assertLessEqual(self.dog3.created_at, timezone.now())
-        
+        self.assertEqual(self.dog1.__str__(), 'Dog12')
+
     def test_user_pref_creation(self):
         '''A sample user preferences profile is created successfully.'''
         self.assertEqual(self.userpref1.user, self.user1)
         self.assertNotEqual(self.userpref2.user, self.user3)
         self.assertLessEqual(self.userpref3.created_at, timezone.now())
-        
+        self.assertEqual(self.userpref1.__str__(), str(self.userpref1.pk))
+
     def test_user_dog_creation(self):
         '''A sample relationship object is created for a user and dog.'''
         self.assertEqual(self.userdog1.status, 'l')
         self.assertNotEqual(self.userdog2.dog, self.dog2)
         self.assertLessEqual(self.userdog2.created_at, timezone.now())
+        self.assertEqual(
+            self.userdog1.__str__(),
+            "USER {} : DOG {}".format(
+                self.user1.username,
+                self.dog2.__str__()
+            )
+        )
 
 
 class UserRegTests(UserZero, APITestCase):
@@ -179,11 +186,11 @@ class UserRegTests(UserZero, APITestCase):
         response = self.client.post(url, new_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(User.objects.count(), 2)
-        # setUp user0 plus new_user == 2
-        # check user via username.  email and/or password may not be available for testing suite?
         self.assertEqual(User.objects.get(username='new_user').username,
                          'new_user')
-        user_pref = models.UserPref.objects.get(user=User.objects.get(username='new_user'))
+        user_pref = models.UserPref.objects.get(
+            user=User.objects.get(username='new_user')
+        )
         self.assertNotEqual(user_pref, None)
         self.assertEqual(user_pref.age, 'b')
 
@@ -230,12 +237,10 @@ class PugOrUghViewTests(Pregame, TestCase):
         view = views.UserDogLikedView.as_view()
         user = self.user3
         request = self.factory.put(reverse('dog-liked', kwargs={'pk': '2'}))
-        # self.dog2.pk is 2. Signed in user is user in question.
         force_authenticate(request, user=user)
         resp = view(request, pk='2')
         self.userdog3.refresh_from_db()
         self.userdog3.save()
-        # This response is HTML, not json.
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.data, "updated to liked")
         self.assertNotEqual(self.userdog3.status, 'd')
@@ -248,12 +253,10 @@ class PugOrUghViewTests(Pregame, TestCase):
         view = views.UserDogDislikedView.as_view()
         user = self.user1
         request = self.factory.put(reverse('dog-liked', kwargs={'pk': '2'}))
-        # self.dog2.pk is 2. Signed in user is user in question.
         force_authenticate(request, user=user)
         resp = view(request, pk='2')
         self.userdog1.refresh_from_db()
         self.userdog1.save()
-        # This response is HTML, not json.
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.data, "updated to disliked")
         self.assertNotEqual(self.userdog1.status, 'l')
@@ -266,12 +269,9 @@ class PugOrUghViewTests(Pregame, TestCase):
         view = views.UserDogUndecidedView.as_view()
         user = self.user1
         request = self.factory.put(reverse('dog-liked', kwargs={'pk': '2'}))
-        # self.dog2.pk is 2. Signed in user is user in question.
         force_authenticate(request, user=user)
         resp = view(request, pk='2')
         self.assertRaises(ObjectDoesNotExist, self.userdog1.refresh_from_db)
-        # self.userdog1 is successfully deleted.
-        # This response is HTML, not json.
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.data, "deleted")
 
@@ -284,12 +284,10 @@ class PugOrUghViewTests(Pregame, TestCase):
         serializer2 = DogSerializer(instance=not_next)
         request = self.factory.get(reverse('dog-undecided-next',
                                            kwargs={'pk': '2'}))
-        # user2 only liked dog1.  Dog3 is outside bounds of user2's prefs.
         force_authenticate(request, user=user)
         resp = view(request, pk='2')
         self.assertEqual(resp.data, serializer.data)
         self.assertNotEqual(resp.data, serializer2.data)
-        # AssertNotEqual makes sure UserPref is working.
 
     def test_user_dog_disliked_next_view(self):
         view = views.UserDogDislikedNextView.as_view()
@@ -300,7 +298,6 @@ class PugOrUghViewTests(Pregame, TestCase):
                                            kwargs={'pk': '2'}))
         force_authenticate(request, user=user)
         resp = view(request, pk='2')
-        # user3 has only disliked dog2, so next_dog is still dog2.
         self.assertEqual(resp.data, serializer.data)
 
     def test_user_dog_liked_next_view(self):
@@ -312,8 +309,8 @@ class PugOrUghViewTests(Pregame, TestCase):
                                            kwargs={'pk': '2'}))
         force_authenticate(request, user=user)
         resp = view(request, pk='2')
-        # user1 liked dogs 2 and 3.  next_dog is dog3.
         self.assertEqual(resp.data, serializer.data)
+
 
 
 class PugOrUghUtilsTest(TestCase):
@@ -367,4 +364,3 @@ class PugOrUghSerializersTest(Pregame, TestCase):
                               'groups',
                               'user_permissions',
                               'id']))
-

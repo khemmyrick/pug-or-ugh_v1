@@ -12,6 +12,7 @@ PROJ_DIR = path.dirname(BASE_DIR)
 
 sys.path.insert(0, PROJ_DIR)
 
+
 def load_data():
     try:
         from pugorugh.serializers import DogSerializer
@@ -22,7 +23,7 @@ def load_data():
         )
 
     filepath = path.join(PROJ_DIR, 'pugorugh', 'static', 'dog_details.json')
-    
+
     with open(filepath, 'r', encoding='utf-8') as file:
         data = json.load(file)
         itera = 1
@@ -44,7 +45,7 @@ def load_data():
 
 
 if __name__ == '__main__':
-    ## sys.path.append(PROJ_DIR)
+    # sys.path.append(PROJ_DIR) ##### MIGHT HAVE TO KEEP THIS FOR DJANGO 2+
     environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.settings")
     django.setup()
     load_data()

@@ -6,7 +6,7 @@ from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 
 from .models import Dog, UserDog, UserPref
-from .serializers import UserSerializer, UserPrefSerializer, DogSerializer 
+from .serializers import UserSerializer, UserPrefSerializer, DogSerializer
 from .utils import get_age_range
 
 
@@ -19,7 +19,7 @@ class UserRegisterView(generics.CreateAPIView):
     model = get_user_model()
 
     def post(self, request, format=None):
-        serializer = UserSerializer(data=request.data)        
+        serializer = UserSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
         UserPref.create_default_pref(user)
@@ -50,7 +50,7 @@ class UserDogLikedView(generics.UpdateAPIView):
     '''
     View for when user likes a dog.
     Sets UserDog status to 'l'.
-    
+
     pk: the dog being liked.
     '''
     queryset = UserDog.objects.all()
@@ -77,7 +77,7 @@ class UserDogLikedView(generics.UpdateAPIView):
 class UserDogLikedNextView(generics.UpdateAPIView):
     '''
     Retrieves next dog from queryset of liked dogs.
-    
+
     pk: the current dog in the list.
     '''
     queryset = UserDog.objects.all()
@@ -109,7 +109,7 @@ class UserDogDislikedView(generics.UpdateAPIView):
     '''
     View for when user dislikes a dog.
     Sets UserDog status to 'd'.
-    
+
     pk: the dog being disliked.
     '''
     queryset = UserDog.objects.all()
@@ -136,7 +136,7 @@ class UserDogDislikedView(generics.UpdateAPIView):
 class UserDogDislikedNextView(generics.UpdateAPIView):
     '''
     Retrieves next dog from queryset of disliked dogs.
-    
+
     pk: the current dog in the list.
     '''
     queryset = UserDog.objects.all()
@@ -232,4 +232,3 @@ class UserDogUndecidedNextView(generics.RetrieveAPIView):
         dog = self.get_object()
         serializer = DogSerializer(dog)
         return Response(serializer.data)
-        

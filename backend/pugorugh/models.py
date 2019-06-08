@@ -20,6 +20,7 @@ STATUSES = (
     ('u', 'undecided')
 )
 
+
 class Dog(models.Model):
     '''
     A model representing dogs on the site.
@@ -29,7 +30,8 @@ class Dog(models.Model):
         image_filename: a str
         breed: a str
         gender, a str: “m” for male, “f” for female, “u” for unknown
-        size, a str: "s" for small, "m" for medium, "l" for large, "xl" for extra large, "u" for unknown
+        size, a str: "s" for small, "m" for medium, "l" for large,
+            "xl" for extra large, "u" for unknown
     '''
     name = models.CharField(max_length=255)
     image_filename = models.CharField(max_length=500)
@@ -66,7 +68,7 @@ class UserPref(models.Model):
     gender = models.CharField(max_length=20, default='f')
     size = models.CharField(max_length=20, default='s')
     created_at = models.DateTimeField(default=timezone.now)
-    
+
     def __str__(self):
         return str(self.pk)
 
@@ -81,7 +83,7 @@ class UserPref(models.Model):
 class UserDog(models.Model):
     """
     A model for storing a specific user's like/dislike of a dog.
-    
+
     attrs:
         user: foreignkey user who has categorized a dog.
         dog: foreignkey dog object in question.
@@ -89,7 +91,7 @@ class UserDog(models.Model):
         created_at: time this object was created.
     """
     user = models.ForeignKey(User, related_name='user')
-    dog = models.ForeignKey(Dog, related_name='users_dog')    
+    dog = models.ForeignKey(Dog, related_name='users_dog')
     status = models.CharField(max_length=20,
                               choices=STATUSES,
                               default='u')
